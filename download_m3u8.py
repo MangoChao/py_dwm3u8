@@ -32,7 +32,7 @@ class DownloadM3u8():
 
         return base_url.rsplit('/', 1)[0] + '/' + ts_url
     async def download_ts_file(self, ts_url, ts_file_path):
-        for _ in range(3): #重試次數
+        for _ in range(1): #重試次數
             try:
                 async with aiohttp.ClientSession(trust_env=True, timeout=aiohttp.ClientTimeout(total=60)) as session:
                     async with session.get(ts_url) as response:
@@ -50,7 +50,7 @@ class DownloadM3u8():
             except Exception as e:
                 print(f'{ts_url} Exception: {e}')
                 print('等待重試...')
-                await asyncio.sleep(1)
+                # await asyncio.sleep(1)
         return False
 
     #檢查m3u8內容是否有效,是否有ts
