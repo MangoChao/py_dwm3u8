@@ -1,7 +1,18 @@
 import aiohttp
 import asyncio
 import os
+from urllib.parse import urlparse
 
+def get_ts_url(base_url, ts_url):
+    if ts_url.startswith('http'):
+        return ts_url
+
+    if ts_url.startswith('/'):
+        parsed_base_url = urlparse(base_url)
+        domain_with_scheme = parsed_base_url.scheme + '://' + parsed_base_url.netloc
+        return domain_with_scheme + ts_url
+
+    return base_url.rsplit('/', 1)[0] + '/' + ts_url
 async def download_ts_file(ts_url, ts_file_path):
     for _ in range(3):  # 尝试重试3次
         try:
@@ -37,8 +48,9 @@ async def download_m3u8_video(url, file_path):
 
             tasks = []
             for i, ts_url in enumerate(m3u8_list):
-                ts_url = url.rsplit('/', 1)[0] + '/' + ts_url
+                ts_url = get_ts_url(url, ts_url)
                 ts_file_path = file_path.rsplit('.', 1)[0] + f'_{i}.ts'
+
                 task = asyncio.ensure_future(
                     download_ts_file(ts_url, ts_file_path))
                 tasks.append(task)
@@ -62,7 +74,8 @@ async def merge_ts_files(base_file_path, num_files):
     print('所有ts文件合并完成')
 
 if __name__ == '__main__':
-    url = 'https://fuaf-uying.mushroomtrack.com/hls/AjToHMToKg1OJpr40BMizg/1715636791/24000/24397/24397.m3u8'
+    # url = 'https://fuaf-uying.mushroomtrack.com/hls/AjToHMToKg1OJpr40BMizg/1715636791/24000/24397/24397.m3u8'
+    url = 'https://ikcdn01.ikzybf.com/20221018/Drqu7QAg/2000kb/hls/index.m3u8'
     ts_file_path = 'dw/288.ts'
 
     loop = asyncio.get_event_loop()
